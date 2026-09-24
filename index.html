@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1c2120">
+  <meta name="description" content="光っている扉のどれかに泥棒が隠れている。扉を開けるたびに泥棒は音から遠ざかって逃げるので、開けた扉を壁にして追いこみ、光を最後の 1 枚まで減らす。全 12 ステージ。">
+  <title>DOORWISE — 扉を開けて泥棒を追いつめる</title>
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="DOORWISE">
+  <meta property="og:title" content="DOORWISE — 扉を開けて泥棒を追いつめる">
+  <meta property="og:description" content="光っている扉のどれかに泥棒が隠れている。扉を開けるたびに泥棒は音から遠ざかって逃げるので、開けた扉を壁にして追いこみ、光を最後の 1 枚まで減らす。全 12 ステージ。">
+  <meta property="og:url" content="https://t-of.github.io/doorwise/">
+  <meta property="og:image" content="https://t-of.github.io/doorwise/icons/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="ja_JP">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- apple-mobile-web-app-status-bar-style は付けない（black-translucent だと iOS 26 で上部が隠れる） -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="DOORWISE">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+
+  <link rel="stylesheet" href="./webapp-kit/webapp-kit.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- タイトル -->
+  <main class="screen title" id="title">
+    <header class="title__head">
+      <div class="board board--sample" id="sample" aria-hidden="true"></div>
+      <h1 class="title__name">DOORWISE</h1>
+      <p class="title__catch">扉を開けて泥棒を追いつめる</p>
+    </header>
+
+    <ol class="howto">
+      <li><b>光っている扉</b>のどれかに泥棒が隠れている。扉を押すと開いて、開いたまま壁になる</li>
+      <li>扉が開くと、泥棒は<b>音から遠ざかるほうへ 1 マス</b>逃げる（上下左右）。光もそれに合わせて動く</li>
+      <li><b>光を最後の 1 枚</b>まで減らしたら、泥棒をつかまえてクリア。少ない手数ほどよい</li>
+    </ol>
+
+    <button class="btn btn--main" id="continue-btn">つづきから</button>
+
+    <section class="pick">
+      <h2 class="pick__label">ステージ</h2>
+      <div class="stages" id="stages"></div>
+    </section>
+
+    <footer class="foot">
+      <div class="foot__actions">
+        <button class="pill" id="sound-btn" aria-pressed="true">音 オン</button>
+        <button class="pill" data-wak="install" hidden>アプリにする</button>
+        <button class="pill" data-wak="share">共有</button>
+      </div>
+      <p class="credit"><a href="/">T.OF...</a> のアプリ</p>
+    </footer>
+  </main>
+
+  <!-- 遊ぶ -->
+  <main class="screen play" id="play" hidden>
+    <header class="hud">
+      <button class="pill" id="back-btn">もどる</button>
+      <h2 class="hud__stage" id="stage-name">ステージ 1</h2>
+      <button class="pill" id="help-btn" aria-label="遊び方">? 遊び方</button>
+    </header>
+
+    <div class="stats">
+      <p class="stat"><span class="stat__label">手数</span><span class="stat__num" id="moves">0</span></p>
+      <p class="stat"><span class="stat__label">目標</span><span class="stat__num stat__num--sub" id="target">0</span><span class="stat__unit">手</span></p>
+      <p class="stat stat--lit"><span class="stat__label">光</span><span class="stat__num stat__num--lit" id="lit">0</span><span class="stat__unit">枚</span></p>
+    </div>
+    <p class="hint" id="hint"></p>
+
+    <section class="stage" id="stage">
+      <div class="board" id="board"></div>
+      <p class="toast" id="toast" hidden>光が広がった</p>
+    </section>
+
+    <footer class="tools">
+      <button class="btn" id="undo-btn">1 手もどす</button>
+      <button class="btn" id="reset-btn">はじめから</button>
+    </footer>
+
+    <!-- つかまえた（盤の上に下寄せで重ねる） -->
+    <section class="clear" id="clear" hidden>
+      <div class="clear__card" role="dialog" aria-labelledby="clear-title">
+        <h2 class="clear__title" id="clear-title">つかまえた</h2>
+        <p class="clear__stars" id="clear-stars"></p>
+        <p class="clear__moves"><span id="clear-moves">0</span> 手 <span class="clear__target">（目標 <span id="clear-target">0</span> 手）</span></p>
+        <p class="clear__record" id="clear-record" hidden>記録更新</p>
+        <button class="btn btn--main" id="next-btn">次へ</button>
+        <div class="clear__row">
+          <button class="btn" id="again-btn">もう一度</button>
+          <button class="btn" id="share-btn">共有</button>
+          <button class="btn" id="list-btn">ステージ一覧</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 遊び方 -->
+  <section class="modal" id="help" hidden>
+    <div class="modal__card" role="dialog" aria-labelledby="help-title">
+      <h2 class="modal__title" id="help-title">遊び方</h2>
+      <ol class="howto howto--modal">
+        <li><b>光っている扉</b>のどれかに泥棒が隠れている。扉を押すと開いて、開いたまま壁になる</li>
+        <li>扉が開くと、泥棒は<b>音から遠ざかるほうへ 1 マス</b>逃げる（上下左右）。光もそれに合わせて動く</li>
+        <li><b>光を最後の 1 枚</b>まで減らしたら、泥棒をつかまえてクリア。少ない手数ほどよい</li>
+      </ol>
+      <ul class="rules">
+        <li>遠ざかる = 開けた扉からの道のり（閉じた扉だけを通る歩数）が 1 増えるとなり。行けるとなりが複数あれば、光はその全部に広がる</li>
+        <li>それより遠くへ行けない泥棒（隅・袋小路）は動かない</li>
+        <li>音は開いた扉と壁を越えない。道がつながっていない所の泥棒は動かない</li>
+        <li>泥棒はずる賢いので、光が 1 枚になるまで見つからない</li>
+        <li>目標手数以内で ★★★、+2 手以内で ★★</li>
+        <li>キーボード: Z・Backspace で 1 手もどす、R ではじめから</li>
+      </ul>
+      <button class="btn btn--main" id="help-close">とじる</button>
+    </div>
+  </section>
+
+  <script src="./webapp-kit/webapp-kit.js"></script>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

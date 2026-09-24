@@ -1,0 +1,326 @@
+:root {
+  --bg: #1c2120;
+  --fg: #eef1ee;
+  --muted: #9aa59f;
+  --floor: #2b322f;         /* 部屋の床 */
+  --floor-line: #353d3a;
+  --wall: #0c0f0e;          /* 壁・柱 */
+  --wood: #7b5a3e;          /* 閉じた扉 */
+  --wood-hi: #93704f;
+  --wood-edge: #4f3a29;
+  --glow: #6ef2c2;          /* 泥棒の気配（扉のすき間から漏れる光） */
+  --glow-soft: rgba(110, 242, 194, 0.35);
+  --face: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.13);
+  --cell: 52px;
+}
+
+* { box-sizing: border-box; }
+
+/* Safari 26 の上下バーの色は html の背景から取られる。body と同じ色にしておく */
+html { background-color: var(--bg); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+/* 画面の端に置くものはセーフエリアの分だけ内側に。高さは 100vh ではなく 100dvh */
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 520px;
+  margin: 0 auto;
+  padding:
+    max(14px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right))
+    max(14px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+}
+
+.pill {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  background: var(--face);
+  border-radius: 999px;
+  padding: 0 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn {
+  min-height: 48px;
+  border: 1px solid var(--line);
+  background: var(--face);
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+.btn--main {
+  min-height: 56px;
+  background: var(--glow);
+  color: #0d2a21;
+  border-color: transparent;
+  font-size: 18px;
+  font-weight: 700;
+}
+.btn:disabled { opacity: 0.4; cursor: default; }
+
+/* ---- タイトル ---- */
+.title__head { text-align: center; padding-top: 8px; }
+.title__name { margin: 14px 0 2px; font-size: 34px; letter-spacing: 0.08em; }
+.title__catch { margin: 0; color: var(--muted); font-size: 15px; }
+.board--sample { --cell: 34px; width: max-content; margin: 0 auto; pointer-events: none; }
+
+.howto { margin: 0; padding-left: 1.4em; font-size: 14px; line-height: 1.6; color: #d4dbd6; }
+.howto li + li { margin-top: 4px; }
+.howto b { color: var(--fg); }
+
+.pick__label { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.stages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stage-btn {
+  min-height: 60px;
+  border: 1px solid var(--line);
+  background: var(--face);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 4px;
+}
+.stage-btn__no { font-size: 18px; font-weight: 700; }
+.stage-btn__sub { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; }
+.stage-btn__sub .on { color: var(--glow); }
+.stage-btn--next { border-color: var(--glow); box-shadow: 0 0 0 1px var(--glow) inset, 0 0 14px var(--glow-soft); }
+.stage-btn:disabled { opacity: 0.35; cursor: default; }
+
+.foot { margin-top: auto; display: grid; gap: 10px; justify-items: center; padding-top: 8px; }
+.foot__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.credit { margin: 0; font-size: 12px; color: var(--muted); }
+.credit a { color: inherit; }
+
+/* ---- 遊ぶ ---- */
+.play { gap: 10px; }
+.hud { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hud__stage { margin: 0; font-size: 17px; }
+
+.stats { display: flex; justify-content: space-around; align-items: flex-end; }
+.stat { margin: 0; display: flex; align-items: baseline; gap: 4px; }
+.stat__label { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.stat__num { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat__num--sub { font-size: 20px; color: #d4dbd6; }
+.stat__num--lit { font-size: 40px; color: var(--glow); text-shadow: 0 0 16px var(--glow-soft); }
+.stat__unit { font-size: 13px; color: var(--muted); }
+.hint { margin: 0; min-height: 1.5em; text-align: center; font-size: 13px; color: var(--muted); }
+
+.stage {
+  flex: 1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  touch-action: manipulation;   /* ダブルタップ拡大を止める */
+  user-select: none;
+  -webkit-user-select: none;
+}
+.toast {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+  color: var(--glow);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* つかまえたカードが出ている間は、盤を上に寄せてカードに隠れないようにする */
+.play--clear .stage { place-items: start center; }
+
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ---- 盤（上から見た見取り図） ---- */
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-auto-rows: var(--cell);
+  gap: 3px;
+  padding: 6px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.cell {
+  position: relative;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.cell--out { visibility: hidden; cursor: default; }
+.cell--wall {
+  cursor: default;
+  background: var(--wall);
+  background-image: repeating-linear-gradient(45deg, transparent 0 5px, rgba(255, 255, 255, 0.05) 5px 7px);
+  border-radius: 2px;
+}
+/* 閉じた扉: 木の板、枠、取っ手 */
+.cell--door {
+  background: linear-gradient(180deg, var(--wood-hi), var(--wood));
+  border: 3px solid var(--wood-edge);
+  border-radius: 4px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+.cell--door::before {    /* 板の割り付け */
+  content: '';
+  position: absolute;
+  inset: 16%;
+  border: 1.5px solid rgba(0, 0, 0, 0.22);
+  border-radius: 2px;
+}
+.cell--door::after {     /* 取っ手 */
+  content: '';
+  position: absolute;
+  right: 14%;
+  top: 44%;
+  width: 12%;
+  height: 12%;
+  border-radius: 50%;
+  background: #d8c49a;
+}
+/* 光っている扉: すき間から漏れる明かり */
+.cell--lit {
+  border-color: var(--glow);
+  box-shadow: 0 0 0 1px var(--glow), 0 0 14px 2px var(--glow-soft), inset 0 -10px 12px -6px var(--glow);
+}
+.cell--lit::before { border-color: rgba(10, 60, 44, 0.35); }
+/* 開いた扉: 床が見え、扉の板が横に寄り、開いた向きの弧が描かれる（見取り図の扉の記号） */
+.cell--open {
+  cursor: default;
+  background: var(--floor);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 1px var(--floor-line);
+}
+.cell--open::before {
+  content: '';
+  position: absolute;
+  left: 12%;
+  top: 12%;
+  width: 76%;
+  height: 76%;
+  border-top: 1.5px dashed rgba(255, 255, 255, 0.22);
+  border-right: 1.5px dashed rgba(255, 255, 255, 0.22);
+  border-top-right-radius: 100%;
+}
+.cell--open::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  top: 12%;
+  width: 9%;
+  height: 76%;
+  background: var(--wood);
+  border-radius: 2px;
+}
+.cell--caught { background: #16322a; box-shadow: 0 0 0 2px var(--glow), 0 0 22px 4px var(--glow-soft); }
+.cell--caught::before, .cell--caught::after { display: none; }
+.cell--caught svg { position: absolute; inset: 8%; width: 84%; height: 84%; animation: pop 0.4s ease-out; }
+.cell--shake { animation: shake 0.22s; }
+
+/* 泥棒が逃げた道すじ（光の流れ） */
+.trail {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--glow);
+  box-shadow: 0 0 10px 3px var(--glow-soft);
+  pointer-events: none;
+}
+
+@keyframes shake {
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+@keyframes pop {
+  from { transform: scale(0.3); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---- つかまえた（下寄せのカード） ---- */
+.clear {
+  position: fixed;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  pointer-events: none;
+}
+.clear__card {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 480px;
+  background: #242b28;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.45);
+  display: grid;
+  gap: 8px;
+  animation: rise 0.3s ease-out;
+}
+.clear__title { margin: 0; font-size: 22px; }
+.clear__stars { margin: 0; font-size: 28px; letter-spacing: 0.15em; color: #3b4541; }
+.clear__stars .on { color: var(--glow); text-shadow: 0 0 12px var(--glow-soft); }
+.clear__moves { margin: 0; font-size: 18px; font-weight: 700; }
+.clear__target { font-size: 14px; font-weight: 400; color: var(--muted); }
+.clear__record { margin: 0; color: var(--glow); font-size: 14px; font-weight: 700; }
+.clear__row { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.clear__row .btn { padding: 0 6px; font-size: 14px; }
+@keyframes rise { from { transform: translateY(30px); opacity: 0; } }
+
+/* ---- 遊び方 ---- */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.6);
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.modal__card {
+  width: 100%;
+  max-width: 460px;
+  background: #242b28;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+.modal__title { margin: 0; font-size: 20px; }
+.rules { margin: 0; padding-left: 1.2em; font-size: 13px; line-height: 1.6; color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cell--door { transition: none; }
+  .cell--caught svg, .clear__card, .cell--shake { animation: none; }
+}

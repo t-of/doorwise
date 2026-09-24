@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "DOORWISE — 扉を開けて泥棒を追いつめる",
+  "short_name": "DOORWISE",
+  "description": "光っている扉のどれかに泥棒が隠れている。扉を開けるたびに泥棒は音から遠ざかって逃げるので、開けた扉を壁にして追いこみ、光を最後の 1 枚まで減らす。全 12 ステージ。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1c2120",
+  "theme_color": "#1c2120",
+  "lang": "ja",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
