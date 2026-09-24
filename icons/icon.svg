@@ -1,1 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#1c2120"/><text x="256" y="256" dy=".35em" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="700" font-size="280" fill="#eceef3">D</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#93704f"/>
+      <stop offset="1" stop-color="#7b5a3e"/>
+    </linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="#1c2120"/>
+
+  <!-- glow behind the suspect door -->
+  <rect x="224" y="96" width="190" height="190" rx="24" fill="#6ef2c2" opacity="0.38" filter="url(#glow)"/>
+
+  <!-- light trail between the two doors -->
+  <circle cx="222" cy="233" r="8" fill="#6ef2c2" opacity="0.5"/>
+  <circle cx="243" cy="216" r="5.5" fill="#6ef2c2" opacity="0.32"/>
+
+  <!-- open door: floor visible, swing arc, leaf against the wall -->
+  <rect x="118" y="246" width="150" height="150" rx="12" fill="#39443f" stroke="#4a5750" stroke-width="4"/>
+  <path d="M136,378 A114,114 0 0 1 250,264" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="7" stroke-linecap="round"/>
+  <rect x="136" y="264" width="17" height="114" rx="4" fill="#a78257" stroke="#4f3a29" stroke-width="2"/>
+
+  <!-- suspect door: closed, glowing -->
+  <rect x="244" y="116" width="150" height="150" rx="12" fill="url(#wood)" stroke="#6ef2c2" stroke-width="6"/>
+  <rect x="268" y="140" width="102" height="102" rx="6" fill="none" stroke="rgba(10,60,44,0.4)" stroke-width="2.5"/>
+  <circle cx="364" cy="191" r="9" fill="#d8c49a"/>
+</svg>
